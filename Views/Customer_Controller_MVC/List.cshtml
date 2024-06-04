@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Customer List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>Customer List</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Customer ID</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Gender</th>
+                <th>Email</th>
+                <th>Mobile</th>
+                <th>Interested Category</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var customer in Model)
+            {
+                <tr>
+                    <td>@customer.Customer_Id</td>
+                    <td>@customer.First_Name</td>
+                    <td>@customer.Last_Name</td>
+                    <td>@customer.Gender</td>
+                    <td>@customer.Email</td>
+                    <td>@customer.Mobile</td>
+                    <td>@customer.Interested_Category</td>
+                    <td class="action-links" style="text-align:center">
+                        @Html.ActionLink("Edit", "Update", new { Customer_Id = @customer.Customer_Id }, new { @class = "edit-link" }) |
+                        @Html.ActionLink("Delete", "deleteCustById", new { Customer_Id = customer.Customer_Id }, new { onclick = "return confirm('Are you sure you want to delete?');", @class = "delete-link" })
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</body>
+</html>
