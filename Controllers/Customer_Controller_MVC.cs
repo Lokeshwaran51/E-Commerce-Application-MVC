@@ -119,84 +119,84 @@ namespace E_Commerce_MVC.Controllers
             return RedirectToAction("ListOfCustomers");
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetCustomerById(int Customer_Id)
-        {
-            try
+
+            [HttpPost]
+            public async Task<IActionResult> UpdateCust(int Customer_Id,CustomerModel_MVC model)
             {
-                CustomerModel_MVC customer = null;
-                HttpResponseMessage res = _httpClient.GetAsync(_httpClient.BaseAddress + "/Customer_Controller_API/GetCustomerById?Customer_Id={Customer_Id}").Result;
-                if (res.IsSuccessStatusCode)
+                if (ModelState.IsValid)
                 {
+                    try
+                    {
+                    HttpResponseMessage res = _httpClient.GetAsync(_httpClient.BaseAddress + "/Customer_Controller_API/InterestedCategories").Result;
                     string responseData = res.Content.ReadAsStringAsync().Result;
-                    customer = JsonConvert.DeserializeObject<CustomerModel_MVC>(responseData);
                     List<InterestedCategory> interestedCategories = JsonConvert.DeserializeObject<List<InterestedCategory>>(responseData);
                     var selectListItems = interestedCategories.Select(p => new SelectListItem { Value = p.Interested_Category, Text = p.Interested_Category, Selected = false }).ToList();
-                }
-               
-                
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = "An error occurred while processing your request. Please try again later.";
-            }
-            return RedirectToAction("Update");
-        }
+                    ViewBag.interestedCategories1 = interestedCategories;
 
-        [HttpPost]
-        public async Task<IActionResult> UpdateCustomer(CustomerModel_MVC model)
-        {
-            if (ModelState.IsValid)
-            {
-                try
-                {
                     string data = JsonConvert.SerializeObject(model);
                     StringContent content = new StringContent(data, System.Text.Encoding.UTF8, "application/json");
-                    HttpResponseMessage res = await _httpClient.PostAsync(_httpClient.BaseAddress + "/Customer_Controller_API/UpdateCustomer", content);
+                    HttpResponseMessage res1 = await _httpClient.PostAsync($"{ _httpClient.BaseAddress }/Customer_Controller_API/UpdateCustomer?Customer_Id={Customer_Id}", content);
 
-                    if (res.IsSuccessStatusCode)
+                    if (res1.IsSuccessStatusCode)
                     {
                         TempData["SuccessMessage"] = "Customer updated successfully.";
-                        return RedirectToAction("List");
+                        return RedirectToAction("ListOfCustomers");
                     }
                     else
                     {
                         TempData["ErrorMessage"] = "Failed to update Customer. Please try again later.";
                     }
                 }
-                catch (Exception ex)
-                {
-                    TempData["ErrorMessage"] = "An error occurred while processing your request. Please try again later.";
+                    catch (Exception ex)
+                    {
+                        TempData["ErrorMessage"] = "An error occurred while processing your request. Please try again later.";
+                    }
                 }
+                return View("Update", model);
             }
-            return View("Update", model);
-        }
+             
 
-
-        public IActionResult Update(CustomerModel_MVC model)
+        [HttpGet]
+        public async Task<IActionResult> Update(int Customer_Id)
         {
             if (!ModelState.IsValid)
             {
                 return View();
             }
+            try
+            { 
+                CustomerModel_MVC customer = new CustomerModel_MVC();
+                HttpResponseMessage res = await _httpClient.GetAsync(_httpClient.BaseAddress + "/Customer_Controller_API/GetCustomerById?Customer_Id=" + Customer_Id);
+                if (res.IsSuccessStatusCode)
+                {
+                    string responseData = await res.Content.ReadAsStringAsync();
+                    customer = JsonConvert.DeserializeObject<CustomerModel_MVC>(responseData);
 
+                    
+                    HttpResponseMessage response = _httpClient.GetAsync(_httpClient.BaseAddress + "/Customer_Controller_API/InterestedCategories").Result;
+                    string response1 = response.Content.ReadAsStringAsync().Result;
+                    List<InterestedCategory> interestedCategories = JsonConvert.DeserializeObject<List<InterestedCategory>>(response1);
+                    var selectListItems = interestedCategories.Select(p => new SelectListItem { Value = p.Interested_Category, Text = p.Interested_Category, Selected = false }).ToList();
+                    ViewBag.interestedCategories1 = interestedCategories;
 
-            HttpResponseMessage res = _httpClient.GetAsync(_httpClient.BaseAddress + "/Customer_Controller_API/UpdateCustomer").Result;
-            string responseData = res.Content.ReadAsStringAsync().Result;
-            List<InterestedCategory> interestedCategories = JsonConvert.DeserializeObject<List<InterestedCategory>>(responseData);
-            var selectListItems = interestedCategories.Select(p => new SelectListItem { Value = p.Interested_Category, Text = p.Interested_Category, Selected = false }).ToList();
-            ViewBag.interestedCategories1 = interestedCategories;
-            if (res.IsSuccessStatusCode)
-            {
-                TempData["SuccessMessage"] = "Customer added successfully.";
-                return RedirectToAction("List");
+                    
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "Failed to load Customer data. Please try again later.";
+                    return RedirectToAction("ListOfCustomers");
+                }
+                return View("Update", customer);
             }
-            else
+
+            catch (Exception)
             {
-                TempData["ErrorMessage"] = "Failed to add Customer. Please try again later.";
+
+                throw;
             }
-            return View();
         }
+
     }
+
 }
 
